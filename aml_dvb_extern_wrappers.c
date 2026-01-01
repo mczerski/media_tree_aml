@@ -28,6 +28,7 @@
 #include "r912.h"
 #include "av201x_avl_top.h"
 #include "cxd2878.h"
+#include "m88tc6800.h"
 
 static void aml_dvb_extern_reset(const struct gpio_config *reset)
 {
@@ -282,23 +283,47 @@ struct dvb_frontend *aml_cxd2878_attach(const struct demod_config *cfg)
 		.TS_switch = NULL,
 		.LED_switch = NULL,
 	};
+	struct m88tc6800_config m88tc6800cfg = {
+		.addr = 0x64,
+		.xtal = 27000,
+		.xtal_cap = 0x18,
+		.mode = 0,
+		.int_lt = 2,
+		.int_im = 2,
+		.custom_cfg = 0,
+		.harmonic_imp = 1,
+		.dac_gain = 2,
+		.dac = 4570,
+	};
 
 	struct dvb_frontend *fe = cxd2878_attach(&cxd2878cfg, cfg->i2c_adap);
 	if (IS_ERR_OR_NULL(fe))
 		return NULL;
 
-	if (cfg->tuner0.id != AM_TUNER_NONE) {
-		const struct tuner_module * tuner = aml_get_tuner_module(cfg->tuner0.id);
-		if (tuner->attach(tuner, fe, &cfg->tuner0) == NULL) {
-			pr_err("CXD2878: failed to attach tuner0 %s\n", tuner->name);
-		}
+	if (m88tc6800_attach(fe, cfg->i2c_adap, &m88tc6800cfg) == NULL) {
+			pr_err("CXD2878: failed to attach tuner0 m88tc6800\n");
 	}
-	else {
-		pr_err("CXD2878: Missing tuner0 config\n");
-	}
+	//if (cfg->tuner0.id != AM_TUNER_NONE) {
+	//	const struct tuner_module * tuner = aml_get_tuner_module(cfg->tuner0.id);
+	//	if (tuner->attach(tuner, fe, &cfg->tuner0) == NULL) {
+	//		pr_err("CXD2878: failed to attach tuner0 %s\n", tuner->name);
+	//	}
+	//}
+	//else {
+	//	pr_err("CXD2878: Missing tuner0 config\n");
+	//}
 
 	return fe;
 }
+
+//struct dvb_frontend *aml_m88tc6800_attach(struct dvb_frontend *fe,
+//				       const struct tuner_config *cfg)
+//{
+//	struct m88tc6800_config m88tc6800cfg = {
+//		.addr = 0x64
+//	};
+//	return m88tc6800_attach(fe, cfg->i2c_adap, &m88tc6800cfg);
+//}
 
 static int __init aml_dvb_extern_wrappers_init(void)
 {
