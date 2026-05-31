@@ -1062,12 +1062,12 @@ int m88tc6800_set_freq(struct m88tc6800_priv *priv, u32 freq_khz, u32 bandwidth_
 
     m88tc6800_read_reg(priv, 0x3c, &reg_data);
     reg_data &= 0x80;
-    if (reg_data == 0) {
-        m88tc6800_set_poweron(priv, bandwidth_hz);
-    }
-    else {
+    //if (reg_data == 0) {
+    //    m88tc6800_set_poweron(priv, bandwidth_hz);
+    //}
+    //else {
         m88tc6800_write_reg(priv, 0x45, 0x5d);
-    }
+    //}
     m88tc6800_write_reg(priv, 0x04, 0x7f);
     m88tc6800_write_reg(priv, 0x05, 0xd8);
     m88tc6800_preset(priv);
